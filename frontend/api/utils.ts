@@ -11,8 +11,8 @@ type CurrencyValue = {
 
 export enum ListingType {
   NotForSale = "Not For Sale",
-  DirectListing = "Direct Listing",
-  EnglishAuction = "English Auction",
+  DirectListing = "Direct",
+  EnglishAuction = "Auction",
 }
 
 const isDirectListing = (listing: NFTListing | undefined): listing is DirectListingV3 => {

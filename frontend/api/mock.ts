@@ -1,4 +1,4 @@
-import { DirectListingV3, NFT, NewDirectListing, Status } from "@thirdweb-dev/sdk";
+import { DirectListing, DirectListingV3, NFT, NewDirectListing, Status } from "@thirdweb-dev/sdk";
 import { StaticImageData } from "next/image";
 import { sampleNFTImages } from "../assets";
 import { POLYGON_ETH_CONTRACT_ADDRESS } from "../const/addresses";
@@ -27,8 +27,7 @@ export async function fetchNFTs(collectionAddress: string): Promise<NFT[]> {
 }
 
 export function fetchOwnedNFTs(ownerAddress: string | undefined): NFT[] {
-  if (!ownerAddress) return [];
-  return preSeedNFTs;
+  return preSeedNFTs.filter((nft) => nft.owner === ownerAddress);
 }
 
 export async function fetchNFTContractMetadata(
@@ -52,7 +51,7 @@ export function fetchDirectListings(
   return filteredListings;
 }
 
-type NewDirectListingV3 = {
+export type NewDirectListingV3 = {
   tokenId: (string | number | bigint | BigNumber) &
     (string | number | bigint | BigNumber | undefined);
   pricePerToken: string | number;
