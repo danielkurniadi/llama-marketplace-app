@@ -1,11 +1,10 @@
 import { Button, Card, Container, Flex, Heading, SimpleGrid, Stack, Text } from "@chakra-ui/react";
-import { ThirdwebNftMedia, useAddress, useContract } from "@thirdweb-dev/react";
+import { ThirdwebNftMedia, useAddress, useContract, useOwnedNFTs } from "@thirdweb-dev/react";
 import React, { useState } from "react";
 import { NFT_COLLECTION_ADDRESS } from "../const/addresses";
 import type { NFT } from "@thirdweb-dev/sdk";
 import NFTGrid from "../components/NFTGrid";
 import SaleInfo from "../components/SaleInfo";
-import { useOwnedNFTs } from "../hooks/nfts";
 
 export default function Sell() {
   const { contract } = useContract(NFT_COLLECTION_ADDRESS);
