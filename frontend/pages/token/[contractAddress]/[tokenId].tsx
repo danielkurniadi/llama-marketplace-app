@@ -9,8 +9,6 @@ import {
   Center,
   Container,
   Flex,
-  HStack,
-  Input,
   SimpleGrid,
   Skeleton,
   Stack,
@@ -25,14 +23,13 @@ import {
   Web3Button,
   useAddress,
   useContract,
-  useValidEnglishAuctions,
+  useValidDirectListings,
 } from "@thirdweb-dev/react";
-import { DirectListingV3, EnglishAuction, NFT, ThirdwebSDK } from "@thirdweb-dev/sdk";
-import { useValidDirectListings } from "../../../hooks/listings";
+import { DirectListingV3, EnglishAuction, NFT } from "@thirdweb-dev/sdk";
 import React, { useState } from "react";
 import { MARKETPLACE_ADDRESS, NFT_COLLECTION_ADDRESS } from "../../../const/addresses";
 import { GetStaticPaths, GetStaticProps } from "next";
-import { fetchNFT, fetchNFTContractMetadata, fetchNFTs } from "../../../api/mock";
+import { fetchNFT, fetchNFTContractMetadata, fetchNFTs } from "../../../api/web3";
 import {
   ListingType,
   getListingCurrencyValue,
@@ -42,7 +39,6 @@ import {
 import { useRouter } from "next/router";
 import { marketLogo } from "../../../assets";
 import { BLUE_BASE } from "../../../const/color";
-import NextLink from "next/link";
 
 type Props = {
   nft: NFT;
@@ -52,37 +48,26 @@ type Props = {
 export default function TokenPage({ nft, contractMetadata }: Props) {
   const walletAddress = useAddress();
   const router = useRouter();
+
   const { contract: marketplace, isLoading: loadingMarketplace } = useContract(
     MARKETPLACE_ADDRESS,
     "marketplace-v3"
   );
-  const { data: directListing, isLoading: loadingDirectListing } = useValidDirectListings(
+  const { data: directListings, isLoading: loadingDirectListing } = useValidDirectListings(
     marketplace,
     {
       tokenContract: NFT_COLLECTION_ADDRESS,
       tokenId: nft.metadata.id,
     }
   );
-
-  console.log("useValidDirectListing", directListing);
-
-  // Add these for auction section
-  const [bidValue, setBidValue] = useState<string>();
-  const { data: auctionListing, isLoading: loadingAuction } = useValidEnglishAuctions(marketplace, {
-    tokenContract: NFT_COLLECTION_ADDRESS,
-    tokenId: nft.metadata.id,
-  });
-
-  const hasListing = (directListing && directListing[0]) || (auctionListing && auctionListing[0]);
-  const isLoading = loadingMarketplace || loadingDirectListing || loadingAuction;
+  const isLoading = loadingMarketplace || loadingDirectListing;
+  const hasListing = directListings && directListings[0];
 
   async function buyListing() {
     // Add for auction section
     let txResult;
-    if (auctionListing?.[0]) {
-      txResult = await marketplace?.englishAuctions.buyoutAuction(auctionListing[0].id);
-    } else if (directListing?.[0]) {
-      txResult = await marketplace?.directListings.buyFromListing(directListing[0].id, 1);
+    if (directListings?.[0]) {
+      txResult = await marketplace?.directListings.buyFromListing(directListings[0].id, 1);
     } else {
       throw new Error("No listing found");
     }
@@ -93,16 +78,11 @@ export default function TokenPage({ nft, contractMetadata }: Props) {
     let txResult;
     let x = nft.supply;
     let y = nft.quantityOwned;
-    if (!bidValue) {
-      return;
-    }
-    if (auctionListing?.[0]) {
-      txResult = await marketplace?.englishAuctions.makeBid(auctionListing[0].id, bidValue);
-    } else if (directListing?.[0]) {
+    if (directListings?.[0]) {
       txResult = await marketplace?.offers.makeOffer({
         assetContractAddress: NFT_COLLECTION_ADDRESS,
         tokenId: nft.metadata.id,
-        totalPrice: bidValue,
+        totalPrice: directListings[0].pricePerToken,
       });
     } else {
       throw new Error("No listing found");
@@ -173,18 +153,13 @@ export default function TokenPage({ nft, contractMetadata }: Props) {
               </Flex>
             </Link>
           </Box>
-          <TokenListingDetailBox
-            listing={directListing?.[0] || auctionListing?.[0]}
-            isLoading={isLoading}
-          />
+          <TokenListingDetailBox listing={directListings?.[0]} isLoading={isLoading} />
           {nft.owner !== walletAddress ? (
             <TokenPurchaseBox
-              listing={directListing?.[0] || auctionListing?.[0]}
+              listing={directListings?.[0]}
               isLoading={isLoading}
               walletAddress={walletAddress}
               onSubmitBuy={async () => await buyListing()}
-              onSubmitBid={async () => await createBidOffer()}
-              onInputType={(input) => setBidValue(input)}
             />
           ) : hasListing ? (
             <VStack>
@@ -270,8 +245,6 @@ const TokenListingDetailBox = ({ listing, isLoading }: TokenListingDetailProps) 
 type TokenPurchaseProps = TokenListingDetailProps & {
   walletAddress?: string;
   onSubmitBuy: () => Promise<any>;
-  onSubmitBid: () => Promise<any>;
-  onInputType: (input: string) => void;
 };
 
 const TokenPurchaseBox = ({
@@ -279,8 +252,6 @@ const TokenPurchaseBox = ({
   isLoading,
   walletAddress,
   onSubmitBuy,
-  onSubmitBid,
-  onInputType,
 }: TokenPurchaseProps) => {
   const priceValue = getListingCurrencyValue(listing);
   const displayPriceValue = priceValue?.displayValue || 0 + " " + priceValue?.symbol;
@@ -293,16 +264,6 @@ const TokenPurchaseBox = ({
         <Stack direction={"column"}>
           {listingType === ListingType.DirectListing ? (
             <Text>{displayPriceValue}</Text>
-          ) : listingType === ListingType.EnglishAuction ? (
-            <Flex>
-              <Input
-                mb={5}
-                defaultValue={priceValue?.displayValue || 0}
-                type={"number"}
-                onChange={(e) => onInputType(e.target.value)}
-              />
-              <Text>{displayPriceValue}</Text>
-            </Flex>
           ) : (
             <Text>Listing was just removed ...</Text>
           )}
@@ -313,8 +274,6 @@ const TokenPurchaseBox = ({
                 setActionPending(true);
                 if (listingType === ListingType.DirectListing) {
                   await onSubmitBuy();
-                } else if (listingType === ListingType.EnglishAuction) {
-                  await onSubmitBid();
                 } else {
                   throw new Error("Invalid listing type found " + listingType);
                 }
@@ -323,7 +282,7 @@ const TokenPurchaseBox = ({
               isDisabled={!listing || walletAddress === listing?.creatorAddress}
             >
               {isActionPending ? (
-                <Spinner/>
+                <Spinner />
               ) : listingType === ListingType.DirectListing ? (
                 "Buy Now"
               ) : (
