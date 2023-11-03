@@ -1,4 +1,4 @@
-import type { NFT, Erc721 } from "@thirdweb-dev/sdk";
+import type { NFT } from "@thirdweb-dev/sdk";
 import { SimpleGrid, Skeleton, Text } from "@chakra-ui/react";
 import React from "react";
 import NFTCard from "./NFTCard";
