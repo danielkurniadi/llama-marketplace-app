@@ -1,17 +1,21 @@
 import React from "react";
-import { NFT, DirectListingV3, EnglishAuction, Status } from "@thirdweb-dev/sdk";
-import { ThirdwebNftMedia, useAddress, useContract } from "@thirdweb-dev/react";
+import { NFT, DirectListingV3, EnglishAuction } from "@thirdweb-dev/sdk";
+import {
+  ThirdwebNftMedia,
+  Web3Button,
+  useAddress,
+  useContract,
+  useValidDirectListings,
+} from "@thirdweb-dev/react";
 import { Avatar, Box, Button, Flex, Image, Skeleton, Text } from "@chakra-ui/react";
 
 import { MARKETPLACE_ADDRESS, NFT_COLLECTION_ADDRESS } from "../const/addresses";
-import { useValidDirectListings, useValidEnglishAuctions } from "../hooks/listings";
 import {
   getListingCurrencyValue,
   getListingDaysLeft,
   getListingType,
   ListingType,
 } from "../api/utils";
-import { BLUE_BASE } from "../const/color";
 
 type Props = {
   nft: NFT;
@@ -30,14 +34,9 @@ export default function NFTCard({ nft }: Props) {
       tokenId: nft.metadata.id,
     }
   );
-  // Add for auction section
-  const { data: auctionListing, isLoading: loadingAuction } = useValidEnglishAuctions(marketplace, {
-    tokenContract: NFT_COLLECTION_ADDRESS,
-    tokenId: nft.metadata.id,
-  });
   // Loading
-  const isLoading = loadingMarketplace || loadingDirectListing || loadingAuction;
-  const hasListing = (directListing && directListing[0]) || (auctionListing && auctionListing[0]);
+  const isLoading = loadingMarketplace || loadingDirectListing;
+  const hasListing = directListing && directListing[0];
   return (
     <Flex
       direction={"column"}
@@ -47,28 +46,25 @@ export default function NFTCard({ nft }: Props) {
       borderRadius={"6px"}
       borderColor={"lightgray"}
       borderWidth={1}
-      _hover={{borderColor: "black"}}
+      _hover={{ borderColor: "black" }}
       position={"relative"}
       display={"inline-block"}
     >
-      {!isLoading &&
+      {!isLoading && (
         <Button
-            position="absolute"
-            top="5px"
-            right="5px"
-            zIndex="1"
-            size="sm"
-            rounded={"full"}
-            borderColor={"white"}
-            backgroundColor={"blackAlpha.900"}
-            color={"white"}
-            _hover={{
-              backgroundColor: BLUE_BASE,
-            }}
+          position={"absolute"}
+          top={"5px"}
+          right={"5px"}
+          zIndex={"1"}
+          fontSize={"sm"}
+          borderColor={"white"}
+          borderRadius={"full"}
+          backgroundColor={"black"}
+          color={"white"}
         >
-          {walletAddress !== nft.owner? "Buy Now!" : hasListing? "Your Listing" : "Sell Now!"}
+          {walletAddress !== nft.owner ? (hasListing? "Buy Now!": "Not for sale :(") : (hasListing ? "Your Listing!" : "You own this!")}
         </Button>
-      }
+      )}
       <Box borderRadius={"4px"} overflow={"hidden"}>
         <ThirdwebNftMedia metadata={nft.metadata} height="100%" width="100%" />
       </Box>
@@ -78,11 +74,11 @@ export default function NFTCard({ nft }: Props) {
       <Text fontWeight={"bold"}>{nft.metadata.name}</Text>
       <Box mt={2}>
         {isLoading ? (
-          <Skeleton lineHeight={"10px"}><NFTCardDetailSection /></Skeleton>
+          <Skeleton lineHeight={"10px"}>
+            <NFTCardDetailSection />
+          </Skeleton>
         ) : directListing && directListing[0] ? (
           <NFTCardDetailSection listing={directListing[0]} />
-        ) : auctionListing && auctionListing[0] ? (
-          <NFTCardDetailSection listing={auctionListing[0]} />
         ) : (
           <NFTCardDetailSection />
         )}
@@ -147,7 +143,7 @@ const NFTCardDetailSection = ({ listing }: NFTCardDetailSectionProps) => {
         <Text fontSize={"small"} as="b">
           Days Left
         </Text>
-        <Text fontSize={"small"}>{listing? daysLeft + " " + "days" : "-"}</Text>
+        <Text fontSize={"small"}>{listing ? daysLeft + " " + "days" : "-"}</Text>
       </Flex>
     </Flex>
   );
