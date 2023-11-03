@@ -1,11 +1,11 @@
 # Llama Marketplace for NFTs
 
 This dApp is my final project for the 2022 Base Blockchain Developer
-Bootcamp. It [is deployed here](#) (TODO: use IPFS), and
+Bootcamp. It [is deployed here](#) (), and
 a screencast of me going through the code and interface
 [may be found here](#) (TODO).
 
-The main contract is [deployed on Polygon Mumbai](#) (TODO),
+The main contract is [deployed on Base Goerli Chain](https://goerli.basescan.org/address/0x2Fe205E647D85bB692242ebE578ca4f8f6f87664) (TODO),
 though it is mainly interacted with by users going through the frontend application.
 
 Once the course is over, I'd like my certification NFT to be sent to
@@ -35,10 +35,10 @@ also mint tokens and add it to their collection of NTFs.
 
 ### Frontend:
 
-Create a project using thirdweb create command and use `next-typescript-starter` template:
+Created by using thirdweb create command and use `next-typescript-starter` template:
 
 ```bash
-npx thirdweb create --template next-typescript-starter
+npx thirdweb create --app --template next-typescript-starter
 ```
 
 The project structure in Next.js is slightly different than normal Javascript codebase, where there is no `src` module
@@ -54,18 +54,38 @@ frontend/
 ├── pages        # Next.js page corresponding to the website URL path.
 ├── styles       # Global base CSS styles.
   tsconfig.json
+  package.json
   yarn.lock
+  README.md
 ```
 
 ### Web 3
 
-TODO
+Create by using thirdweb create command and use `hardhat-typescript` template:
+
+```bash
+npx thirdweb create --contract --template hardhat-typescript
+```
+
+The project structure in Next.js is slightly different than normal Javascript codebase, where there is no `src` module
+at all. Instead, the modules hierarchy is flat and straight to the point.
+
+```
+web3/
+├── contracts        # Solidity smart contracts interface and implementation.
+  hardhat.config.ts  # Configuration for hardhat to compile the smart contracts.
+  tsconfig.json
+  package.json
+  yarn.lock
+  README.md
+```
 
 ## Setup and Run
 
 ### Frontend
 
 Navigate to the `frontend/` folder and do the following instruction.
+More detail of the setup in [frontend/README.md](./frontend/README.md)
 
 First, install dependencies:
 ```bash
@@ -122,6 +142,31 @@ At the time of writing, thirdweb supports
 - [Trust Wallet](https://portal.thirdweb.com/react/react.trustWallet)
 - [Zerion Wallet](https://portal.thirdweb.com/react/react.zerion)
 - [Phantom](https://portal.thirdweb.com/react/react.phantom)
+
+## Web3
+
+Navigate to the `web3/` folder and do the following instruction.
+Full detail of the setup in [web3/README.md](./web3/README.md).
+
+### Deploying Contracts
+
+When you're ready to deploy your contracts, just run one of the following command to deploy you're contracts:
+
+```bash
+npm run deploy
+# or
+yarn deploy
+```
+
+### Releasing Contracts
+
+If you want to release a version of your contracts publicly, you can use one of the followings command:
+
+```bash
+npm run release
+# or
+yarn release
+```
 
 ## Contributing
 
