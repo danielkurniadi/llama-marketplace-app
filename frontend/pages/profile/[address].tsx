@@ -1,13 +1,12 @@
 import React from "react";
 import { useRouter } from "next/router";
 import { Container, Heading, Text } from "@chakra-ui/react";
-import { useContract } from "@thirdweb-dev/react";
+import { useContract, useOwnedNFTs } from "@thirdweb-dev/react";
 import {
   MARKETPLACE_ADDRESS,
   NFT_COLLECTION_ADDRESS,
 } from "../../const/addresses";
 import NFTGrid from "../../components/NFTGrid";
-import { useOwnedNFTs } from "../../hooks/nfts";
 
 export default function ProfilePage() {
   const router = useRouter();
