@@ -45,5 +45,5 @@ export function getListingType(listing: NFTListing | undefined): ListingType {
 
 export function getListingDaysLeft(listing: NFTListing | undefined): number {
   if (!listing) return 0;
-  return (listing.endTimeInSeconds - listing.startTimeInSeconds) / SECONDS_PER_DAY;
+  return Math.ceil((listing.endTimeInSeconds - listing.startTimeInSeconds) / SECONDS_PER_DAY / 1000);
 }
